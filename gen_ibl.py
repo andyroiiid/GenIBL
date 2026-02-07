@@ -243,35 +243,3 @@ def check_images():
         max_diff = np.max(np.abs(pixels - reference))
         if not np.isclose(max_diff, 0):
             print(f"{path} differs from {reference_path}: max diff = {max_diff:.6f}")
-
-
-def main():
-    pixels = load_image("kloppenheim_06_puresky_4k.exr")
-    show_image(pixels, "original")
-    image = create_image(pixels)
-
-    irradiance = prefilter_irradiance(image, Glm.UVec2(256, 128))
-    dumped = dump_image(irradiance)
-    show_image(dumped, "irradiance")
-    save_image("output/irradiance.exr", dumped)
-
-    radiance_base_size = Glm.UVec2(1024, 512)
-    radiance_mip_levels = 8
-    for i in range(radiance_mip_levels):
-        roughness = i / (radiance_mip_levels - 1)
-        size = Glm.UVec2(radiance_base_size.x >> i, radiance_base_size.y >> i)
-        radiance = prefilter_radiance(image, size, roughness)
-        dumped = dump_image(radiance)
-        show_image(dumped, f"radiance {i}")
-        save_image(f"output/radiance_{i}.exr", dumped)
-
-    brdf_lut = integrate_brdf(512)
-    dumped = dump_image(brdf_lut)
-    show_image(dumped, "brdf lut")
-    save_image("output/brdf_lut.exr", dumped)
-
-    check_images()
-
-
-if __name__ == "__main__":
-    main()
